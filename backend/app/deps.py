@@ -4,7 +4,7 @@ from jose import jwt, JWTError
 
 from app.database import SessionLocal
 from app import models
-from app.auth import SECRET_KEY, ALGORITHM
+from app.routers.auth import SECRET_KEY, ALGORITHM
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 

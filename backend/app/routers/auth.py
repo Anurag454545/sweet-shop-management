@@ -5,11 +5,17 @@ from app.database import SessionLocal
 from app import models, schemas
 from app.auth import hash_password, verify_password, create_token
 
+# --------------------------------------------------
+# Router
+# --------------------------------------------------
+router = APIRouter(
+    prefix="/api/auth",
+    tags=["auth"]
+)
 
-router = APIRouter(prefix="/api/auth", tags=["auth"])
-
-
-# Dependency: DB session
+# --------------------------------------------------
+# Database dependency
+# --------------------------------------------------
 def get_db():
     db = SessionLocal()
     try:
@@ -17,8 +23,9 @@ def get_db():
     finally:
         db.close()
 
-
-# ---------------- REGISTER ----------------
+# --------------------------------------------------
+# REGISTER
+# --------------------------------------------------
 @router.post("/register")
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     existing_user = (
@@ -44,8 +51,9 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
         "email": new_user.email
     }
 
-
-# ---------------- LOGIN ----------------
+# --------------------------------------------------
+# LOGIN
+# --------------------------------------------------
 @router.post("/login")
 def login(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = (

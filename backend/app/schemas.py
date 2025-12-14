@@ -9,3 +9,9 @@ class SweetCreate(BaseModel):
     category: str
     price: float
     quantity: int
+    
+class SweetCreate(BaseModel):
+    name: str
+    price: int
+    quantity: int
+   
