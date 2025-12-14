@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
@@ -11,6 +11,7 @@ router = APIRouter(
 )
 
 
+# Dependency: DB session
 def get_db():
     db = SessionLocal()
     try:
@@ -19,12 +20,17 @@ def get_db():
         db.close()
 
 
-@router.get("/")
-def list_sweets(current_user=Depends(get_current_user), db: Session = Depends(get_db)):
+# ---------------- LIST SWEETS (PROTECTED) ----------------
+@router.get("")
+def list_sweets(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     return db.query(models.Sweet).all()
 
 
-@router.post("/")
+# ---------------- ADD SWEET (PROTECTED) ----------------
+@router.post("")
 def add_sweet(
     sweet: schemas.SweetCreate,
     current_user=Depends(get_current_user),
@@ -41,3 +47,17 @@ def add_sweet(
     db.refresh(new_sweet)
 
     return new_sweet
+
+
+# ---------------- SEARCH SWEETS (PROTECTED) ----------------
+@router.get("/search")
+def search_sweets(
+    query: str = Query(...),
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(models.Sweet)
+        .filter(models.Sweet.name.ilike(f"%{query}%"))
+        .all()
+    )
