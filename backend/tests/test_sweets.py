@@ -16,29 +16,29 @@ def get_token():
     return res.json()["access_token"]
 
 
-def test_add_and_purchase_sweet():
+def test_restock_sweet():
     token = get_token()
 
-    # Add sweet
+    # Create sweet
     res = client.post(
         "/api/sweets",
         json={
-            "name": "Kaju Katli",
-            "price": 50,
-            "quantity": 10
+            "name": "Rasgulla",
+            "price": 30,
+            "quantity": 5
         },
         headers={"Authorization": f"Bearer {token}"}
     )
 
     sweet_id = res.json()["id"]
 
-    # Purchase sweet
+    # Restock sweet
     response = client.post(
-        f"/api/sweets/{sweet_id}/purchase",
-        json={"quantity": 3},
+        f"/api/sweets/{sweet_id}/restock",
+        json={"quantity": 10},
         headers={"Authorization": f"Bearer {token}"}
     )
 
     assert response.status_code == 200
     data = response.json()
-    assert data["quantity"] == 7
+    assert data["quantity"] == 15

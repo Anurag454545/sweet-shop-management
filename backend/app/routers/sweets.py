@@ -105,5 +105,23 @@ def purchase_sweet(
     db_sweet.quantity -= quantity
     db.commit()
     db.refresh(db_sweet)
+    return db_sweet
 
+
+@router.post("/{sweet_id}/restock")
+def restock_sweet(
+    sweet_id: int,
+    data: dict,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    quantity = data.get("quantity")
+
+    db_sweet = db.query(models.Sweet).filter(models.Sweet.id == sweet_id).first()
+    if not db_sweet:
+        raise HTTPException(status_code=404, detail="Sweet not found")
+
+    db_sweet.quantity += quantity
+    db.commit()
+    db.refresh(db_sweet)
     return db_sweet
