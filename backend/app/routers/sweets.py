@@ -79,3 +79,20 @@ def update_sweet(
     db.refresh(db_sweet)
 
     return db_sweet
+
+
+@router.delete("/{sweet_id}")
+def delete_sweet(
+    sweet_id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db_sweet = db.query(models.Sweet).filter(models.Sweet.id == sweet_id).first()
+
+    if not db_sweet:
+        raise HTTPException(status_code=404, detail="Sweet not found")
+
+    db.delete(db_sweet)
+    db.commit()
+
+    return {"detail": "Sweet deleted"}
