@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
@@ -11,7 +11,6 @@ router = APIRouter(
 )
 
 
-# Dependency: DB session
 def get_db():
     db = SessionLocal()
     try:
@@ -20,7 +19,6 @@ def get_db():
         db.close()
 
 
-# ---------------- LIST SWEETS (PROTECTED) ----------------
 @router.get("")
 def list_sweets(
     current_user=Depends(get_current_user),
@@ -29,7 +27,6 @@ def list_sweets(
     return db.query(models.Sweet).all()
 
 
-# ---------------- ADD SWEET (PROTECTED) ----------------
 @router.post("")
 def add_sweet(
     sweet: schemas.SweetCreate,
@@ -49,7 +46,6 @@ def add_sweet(
     return new_sweet
 
 
-# ---------------- SEARCH SWEETS (PROTECTED) ----------------
 @router.get("/search")
 def search_sweets(
     query: str = Query(...),
@@ -61,3 +57,25 @@ def search_sweets(
         .filter(models.Sweet.name.ilike(f"%{query}%"))
         .all()
     )
+
+
+@router.put("/{sweet_id}")
+def update_sweet(
+    sweet_id: int,
+    sweet: schemas.SweetCreate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db_sweet = db.query(models.Sweet).filter(models.Sweet.id == sweet_id).first()
+
+    if not db_sweet:
+        raise HTTPException(status_code=404, detail="Sweet not found")
+
+    db_sweet.name = sweet.name
+    db_sweet.price = sweet.price
+    db_sweet.quantity = sweet.quantity
+
+    db.commit()
+    db.refresh(db_sweet)
+
+    return db_sweet
